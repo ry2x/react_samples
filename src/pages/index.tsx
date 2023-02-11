@@ -24,7 +24,7 @@ const Index = () => {
         <Grid xs={12} item>
           <br />
         </Grid>
-        <Grid xs={2}>
+        <Grid xs={2} item>
           <HomeCard
             HeadDiscription={'Do you want to select tree node?'}
             Title={'SelectTree'}
