@@ -2,11 +2,34 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { TreeView, useTreeItem } from '@mui/lab';
 // eslint-disable-next-line import/named
-import TreeItem, { TreeItemContentProps, TreeItemProps } from '@mui/lab/TreeItem';
-import { Popover, TextField, Typography } from '@mui/material';
+import TreeItem, { TreeItemContentProps, TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
+import { Collapse, Popover, TextField, Typography } from '@mui/material';
+import { alpha, styled } from '@mui/material/styles';
+// eslint-disable-next-line import/named
+import { TransitionProps } from '@mui/material/transitions/transition';
+import { useSpring, animated } from '@react-spring/web';
 import clsx from 'clsx';
 import React, { useState } from 'react';
 import { DataType } from '@/constants/data';
+
+function TransitionComponent(props: TransitionProps) {
+  const style = useSpring({
+    from: {
+      opacity: 0,
+      transform: 'translate3d(20px,0,0)',
+    },
+    to: {
+      opacity: props.in ? 1 : 0,
+      transform: `translate3d(${props.in ? 0 : 20}px,0,0)`,
+    },
+  });
+
+  return (
+    <animated.div style={style}>
+      <Collapse {...props} />
+    </animated.div>
+  );
+}
 
 const CustomContent = React.forwardRef(function CustomContent(props: TreeItemContentProps, ref) {
   const { classes, className, label, nodeId, icon: iconProp, expansionIcon, displayIcon } = props;
@@ -57,9 +80,24 @@ const CustomContent = React.forwardRef(function CustomContent(props: TreeItemCon
   );
 });
 
-const CustomTreeItem = (props: JSX.IntrinsicAttributes & TreeItemProps) => (
-  <TreeItem ContentComponent={CustomContent} {...props} />
-);
+// const CustomTreeItem = (props: JSX.IntrinsicAttributes & TreeItemProps) => (
+//   <TreeItem ContentComponent={CustomContent} {...props} />
+// );
+
+const CustomTreeItem = styled((props: JSX.IntrinsicAttributes & TreeItemProps) => (
+  <TreeItem {...props} TransitionComponent={TransitionComponent} ContentComponent={CustomContent} />
+))(({ theme }) => ({
+  [`& .${treeItemClasses.iconContainer}`]: {
+    '& .close': {
+      opacity: 0.3,
+    },
+  },
+  [`& .${treeItemClasses.group}`]: {
+    marginLeft: 7,
+    paddingLeft: 18,
+    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
+  },
+}));
 
 type SelectTreeProps = {
   data: DataType[];
@@ -97,9 +135,9 @@ export default function SelectTree(props: SelectTreeProps) {
         required={false}
         name='selectedItem'
         id='selectedItem'
-        defaultValue={selectedItem}
         value={selectedItem}
         onClick={(e) => handleClick(e)}
+        sx={{ width: '30vw' }}
       />
 
       <Popover
@@ -111,13 +149,18 @@ export default function SelectTree(props: SelectTreeProps) {
           vertical: 'bottom',
           horizontal: 'left',
         }}
+        sx={{ width: '30vw' }}
       >
         <TreeView
           aria-label='icon expansion'
           defaultSelected={selectedId}
           selected={selectedId}
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
+          defaultCollapseIcon={
+            <ExpandMoreIcon fontSize='inherit' style={{ width: 14, height: 14 }} />
+          }
+          defaultExpandIcon={
+            <ChevronRightIcon fontSize='inherit' style={{ width: 14, height: 14 }} />
+          }
           onNodeSelect={(event: React.SyntheticEvent, nodeIds: string) => {
             setSelectedId(nodeIds);
             props.onChange(nodeIds);
@@ -128,7 +171,7 @@ export default function SelectTree(props: SelectTreeProps) {
           sx={{
             height: 200,
             flexGrow: 1,
-            minWidth: '200px',
+            width: '30vw',
             overflowY: 'auto',
           }}
         >
